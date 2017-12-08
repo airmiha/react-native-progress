@@ -89,7 +89,7 @@ export class ProgressCircle extends Component {
       direction,
       formatText,
       indeterminate,
-      progressOffset,
+      progressOffset = 0,
       alternateColor,
       progress,
       rotation,
