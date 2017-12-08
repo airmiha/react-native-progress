@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
-  ViewPropTypes,
+  ViewPropTypes
 } from 'react-native';
 
 import Arc from './Shapes/Arc';
@@ -22,12 +22,13 @@ const RNViewPropTypes = ViewPropTypes || View.propTypes;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: 'transparent',
-    overflow: 'hidden',
-  },
+    overflow: 'hidden'
+  }
 });
 
 export class ProgressCircle extends Component {
   static propTypes = {
+    alternateColor: PropTypes.string,
     animated: PropTypes.bool,
     borderColor: PropTypes.string,
     borderWidth: PropTypes.number,
@@ -36,9 +37,10 @@ export class ProgressCircle extends Component {
     direction: PropTypes.oneOf(['clockwise', 'counter-clockwise']),
     formatText: PropTypes.func,
     indeterminate: PropTypes.bool,
+    progressOffset: PropTypes.number,
     progress: PropTypes.oneOfType([
       PropTypes.number,
-      PropTypes.instanceOf(Animated.Value),
+      PropTypes.instanceOf(Animated.Value)
     ]),
     rotation: PropTypes.instanceOf(Animated.Value),
     showsText: PropTypes.bool,
@@ -46,7 +48,7 @@ export class ProgressCircle extends Component {
     style: RNViewPropTypes.style,
     textStyle: Text.propTypes.style,
     thickness: PropTypes.number,
-    unfilledColor: PropTypes.string,
+    unfilledColor: PropTypes.string
   };
 
   static defaultProps = {
@@ -57,7 +59,7 @@ export class ProgressCircle extends Component {
     progress: 0,
     showsText: false,
     size: 40,
-    thickness: 3,
+    thickness: 3
   };
 
   constructor(props, context) {
@@ -68,7 +70,7 @@ export class ProgressCircle extends Component {
 
   componentWillMount() {
     if (this.props.animated) {
-      this.props.progress.addListener((event) => {
+      this.props.progress.addListener(event => {
         this.progressValue = event.value;
         if (this.props.showsText || this.progressValue === 1) {
           this.forceUpdate();
@@ -87,6 +89,8 @@ export class ProgressCircle extends Component {
       direction,
       formatText,
       indeterminate,
+      progressOffset,
+      alternateColor,
       progress,
       rotation,
       showsText,
@@ -101,18 +105,23 @@ export class ProgressCircle extends Component {
 
     const border = borderWidth || (indeterminate ? 1 : 0);
 
-    const radius = (size / 2) - border;
+    const radius = size / 2 - border;
     const offset = {
       top: border,
-      left: border,
+      left: border
     };
     const textOffset = border + thickness;
-    const textSize = size - (textOffset * 2);
+    const textSize = size - textOffset * 2;
 
     const Surface = rotation ? AnimatedSurface : ART.Surface;
     const Shape = animated ? AnimatedArc : Arc;
     const progressValue = animated ? this.progressValue : progress;
-    const angle = animated ? Animated.multiply(progress, CIRCLE) : progress * CIRCLE;
+
+    const offsetAngle = progressOffset * CIRCLE;
+
+    const angle = animated
+      ? Animated.multiply(progress, CIRCLE)
+      : progress * CIRCLE;
 
     return (
       <View style={[styles.container, style]} {...restProps}>
@@ -120,39 +129,59 @@ export class ProgressCircle extends Component {
           width={size}
           height={size}
           style={{
-            transform: [{
-              rotate: indeterminate && rotation
-                ? rotation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0deg', '360deg'],
-                })
-                : '0deg',
-            }],
+            transform: [
+              {
+                rotate:
+                  indeterminate && rotation
+                    ? rotation.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg']
+                      })
+                    : '0deg'
+              }
+            ]
           }}
         >
           {unfilledColor && progressValue !== 1 ? (
             <Shape
               radius={radius}
               offset={offset}
-              startAngle={angle}
+              startAngle={Animated.add(angle, offsetAngle)}
               endAngle={CIRCLE}
               direction={direction}
               stroke={unfilledColor}
               strokeWidth={thickness}
             />
-          ) : false}
-          {!indeterminate ? (
+          ) : (
+            false
+          )}
+          {!indeterminate && progressOffset ? (
             <Shape
               radius={radius}
               offset={offset}
               startAngle={0}
-              endAngle={angle}
+              endAngle={offsetAngle}
               direction={direction}
               stroke={color}
               strokeCap={strokeCap}
               strokeWidth={thickness}
             />
-          ) : false}
+          ) : null}
+          {!indeterminate ? (
+            <Shape
+              radius={radius}
+              offset={offset}
+              startAngle={offsetAngle}
+              endAngle={Animated.add(angle, offsetAngle)}
+              direction={direction}
+              stroke={progressOffset ? alternateColor : color}
+              strokeCap={strokeCap}
+              strokeWidth={thickness}
+            />
+          ) : (
+            false
+          )}
+
           {border ? (
             <Arc
               radius={size / 2}
@@ -162,7 +191,9 @@ export class ProgressCircle extends Component {
               strokeCap={strokeCap}
               strokeWidth={border}
             />
-          ) : false}
+          ) : (
+            false
+          )}
         </Surface>
         {!indeterminate && showsText ? (
           <View
@@ -174,20 +205,25 @@ export class ProgressCircle extends Component {
               height: textSize,
               borderRadius: textSize / 2,
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'center'
             }}
           >
             <Text
-              style={[{
-                color,
-                fontSize: textSize / 4.5,
-                fontWeight: '300',
-              }, textStyle]}
+              style={[
+                {
+                  color,
+                  fontSize: textSize / 4.5,
+                  fontWeight: '300'
+                },
+                textStyle
+              ]}
             >
               {formatText(progressValue)}
             </Text>
           </View>
-        ) : false}
+        ) : (
+          false
+        )}
         {children}
       </View>
     );
