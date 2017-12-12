@@ -123,6 +123,10 @@ export class ProgressCircle extends Component {
       ? Animated.multiply(progress, CIRCLE)
       : progress * CIRCLE;
 
+    const angleWithOffset = animated
+      ? Animated.add(angle, offsetAngle)
+      : angle + offsetAngle;
+
     return (
       <View style={[styles.container, style]} {...restProps}>
         <Surface
@@ -146,7 +150,7 @@ export class ProgressCircle extends Component {
             <Shape
               radius={radius}
               offset={offset}
-              startAngle={Animated.add(angle, offsetAngle)}
+              startAngle={angleWithOffset}
               endAngle={CIRCLE}
               direction={direction}
               stroke={unfilledColor}
@@ -172,7 +176,7 @@ export class ProgressCircle extends Component {
               radius={radius}
               offset={offset}
               startAngle={offsetAngle}
-              endAngle={Animated.add(angle, offsetAngle)}
+              endAngle={angleWithOffset}
               direction={direction}
               stroke={progressOffset ? alternateColor : color}
               strokeCap={strokeCap}
