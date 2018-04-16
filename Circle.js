@@ -42,6 +42,7 @@ export class ProgressCircle extends Component {
       PropTypes.number,
       PropTypes.instanceOf(Animated.Value)
     ]),
+    progressThickness: PropTypes.number,
     rotation: PropTypes.instanceOf(Animated.Value),
     showsText: PropTypes.bool,
     size: PropTypes.number,
@@ -90,6 +91,7 @@ export class ProgressCircle extends Component {
       formatText,
       indeterminate,
       progressOffset = 0,
+      progressThickness = 0,
       alternateColor,
       progress,
       rotation,
@@ -104,6 +106,9 @@ export class ProgressCircle extends Component {
     } = this.props;
 
     const border = borderWidth || (indeterminate ? 1 : 0);
+
+    const thicknessDifference =
+      ((progressThickness || thickness) - thickness) / 2;
 
     const radius = size / 2 - border;
     const offset = {
@@ -130,8 +135,8 @@ export class ProgressCircle extends Component {
     return (
       <View style={[styles.container, style]} {...restProps}>
         <Surface
-          width={size}
-          height={size}
+          width={size + thicknessDifference * 2}
+          height={size + thicknessDifference * 2}
           style={{
             transform: [
               {
@@ -173,14 +178,14 @@ export class ProgressCircle extends Component {
           ) : null}
           {!indeterminate ? (
             <Shape
-              radius={radius}
+              radius={radius + thicknessDifference}
               offset={offset}
               startAngle={offsetAngle}
               endAngle={angleWithOffset}
               direction={direction}
               stroke={progressOffset ? alternateColor : color}
               strokeCap={strokeCap}
-              strokeWidth={thickness}
+              strokeWidth={progressThickness || thickness}
             />
           ) : (
             false
